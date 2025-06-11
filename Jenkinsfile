@@ -9,32 +9,58 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
+                echo "Checking out code..."
                 checkout scm
             }
         }
 
         stage('Build Docker Image') {
             steps {
+                echo "Building Docker image..."
                 script {
-                    sh "docker build -t ${IMAGE_NAME} ."
+                    sh "docker build -t ${IMAGE_NAME}:latest ."
                 }
             }
         }
 
-        stage('Stop Old Container') {
+        stage('Stop and Remove Old Container') {
             steps {
+                echo "Stopping and removing old container (if exists)..."
                 script {
-                    sh "docker rm -f ${CONTAINER_NAME} || true"
+                    sh """
+                        if [ \$(docker ps -aq -f name=${CONTAINER_NAME}) ]; then
+                            docker rm -f ${CONTAINER_NAME}
+                        fi
+                    """
                 }
             }
         }
 
         stage('Run New Container') {
             steps {
+                echo "Starting new container..."
                 script {
-                    sh "docker run -d --name ${CONTAINER_NAME} ${IMAGE_NAME}"
+                    sh "docker run -d --name ${CONTAINER_NAME} ${IMAGE_NAME}:latest"
                 }
             }
+        }
+
+        stage('Verify Deployment') {
+            steps {
+                echo "Verifying that the container is running..."
+                script {
+                    sh "docker ps | grep ${CONTAINER_NAME}"
+                }
+            }
+        }
+    }
+
+    post {
+        failure {
+            echo "Pipeline failed. Check logs for details."
+        }
+        success {
+            echo "Deployment successful!"
         }
     }
 }
