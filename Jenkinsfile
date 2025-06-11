@@ -5,6 +5,7 @@ pipeline {
         IMAGE_NAME = "test"
     }
 
+    stages {
         stage('Build Docker Image') {
             steps {
                 script {
@@ -22,4 +23,3 @@ pipeline {
         }
     }
 }
-
