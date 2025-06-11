@@ -2,10 +2,17 @@ pipeline {
     agent any
 
     environment {
-        IMAGE_NAME = "test"
+        IMAGE_NAME = "test-image"
+        CONTAINER_NAME = "test-container"
     }
 
     stages {
+        stage('Checkout') {
+            steps {
+                checkout scm
+            }
+        }
+
         stage('Build Docker Image') {
             steps {
                 script {
@@ -14,10 +21,18 @@ pipeline {
             }
         }
 
-        stage('Run Docker Container') {
+        stage('Stop Old Container') {
             steps {
                 script {
-                    sh "docker run --rm ${IMAGE_NAME}"
+                    sh "docker rm -f ${CONTAINER_NAME} || true"
+                }
+            }
+        }
+
+        stage('Run New Container') {
+            steps {
+                script {
+                    sh "docker run -d --name ${CONTAINER_NAME} ${IMAGE_NAME}"
                 }
             }
         }
