@@ -5,13 +5,6 @@ pipeline {
         IMAGE_NAME = "test"
     }
 
-    stages {
-        stage('Clone Repo') {
-            steps {
-                git 'https://github.com/Abdallah9858/test.git'
-            }
-        }
-
         stage('Build Docker Image') {
             steps {
                 script {
